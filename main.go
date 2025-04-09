@@ -51,17 +51,19 @@ func (m model) View() string {
 	var b strings.Builder
 
 	// header things, kinda like doiung css with lipgloss
+	// TODO: determine size of the terminal, then use that to center the header
+
 	var ( 
 		headerStyle = lipgloss.NewStyle().
 		Bold(true).
 		Foreground(lipgloss.Color("#FF00FF")).
-		Align(lipgloss.Center, lipgloss.Center)
+		Align(lipgloss.Center, lipgloss.Center) 
 	)
 	b.WriteString(headerStyle.Render("Process Management Simulator") + "\n")
 	b.WriteString(strings.Repeat("\n", 10) + "\n")
 
 	if m.showScheduled { // FCFS VIEW
-		b.WriteString("Scheduled (FCFS):\n")
+		b.WriteString("First Come First Served Scheduled:\n")
 		b.WriteString("PID  Arrival  Burst  Start  Complete  Turnaround  Waiting\n")
 		for _, p := range m.scheduled {
 			b.WriteString(fmt.Sprintf("%3d  %7d  %5d  %5d  %8d  %10d  %7d\n",
@@ -69,7 +71,7 @@ func (m model) View() string {
 		}
 		b.WriteString("\nPress [f] to go back to Generated Processes")
 	}else { // DEFAULT VIEW
-		b.WriteString("Generated Processes:\n")
+		b.WriteString("Unscheduled Generated Processes:\n")
 		b.WriteString("PID  Arrival  Burst\n")
 		for _, p := range m.processes {
 			b.WriteString(fmt.Sprintf("%3d  %7d  %5d\n", p.PID, p.ArrivalTime, p.BurstTime))
