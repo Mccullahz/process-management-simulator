@@ -6,8 +6,9 @@ import (
 	"strings"
 	"process-management-simulator/cmd"
 	tea"github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
-
+// --> initialization 
 type model struct {
 	processes         []cmd.Process
 	scheduled         []cmd.ScheduledProcess
@@ -27,50 +28,57 @@ func initialModel() model {
 	}
 }
 
-// --- Bubbletea interface ---
+// --> Bubbletea interface ---
 
 func (m model) Init() tea.Cmd {
 	return nil
 }
-
+// update function to handle messages, e.g., key presses
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q", "ctrl+c":
 			return m, tea.Quit
-		case "s":
+		case "f":
 			m.showScheduled = !m.showScheduled
 		}
 	}
 	return m, nil
 }
-
+// view function to render (?) the bubbletea model
 func (m model) View() string {
 	var b strings.Builder
 
-	if m.showScheduled {
+	// header
+	var headerStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FF00FF"))
+	b.WriteString(headerStyle.Render("Process Management Simulator") + "\n")
+	b.WriteString(strings.Repeat("\n", 10) + "\n")
+
+	if m.showScheduled { // FCFS VIEW
 		b.WriteString("Scheduled (FCFS):\n")
 		b.WriteString("PID  Arrival  Burst  Start  Complete  Turnaround  Waiting\n")
 		for _, p := range m.scheduled {
 			b.WriteString(fmt.Sprintf("%3d  %7d  %5d  %5d  %8d  %10d  %7d\n",
 				p.PID, p.ArrivalTime, p.BurstTime, p.StartTime, p.CompletionTime, p.TurnaroundTime, p.WaitingTime))
 		}
-	} else {
+		b.WriteString("\nPress [f] to go back to Generated Processes")
+	}else { // DEFAULT VIEW
 		b.WriteString("Generated Processes:\n")
 		b.WriteString("PID  Arrival  Burst\n")
 		for _, p := range m.processes {
 			b.WriteString(fmt.Sprintf("%3d  %7d  %5d\n", p.PID, p.ArrivalTime, p.BurstTime))
 		}
-		b.WriteString("\nPress [s] to view FCFS Schedule")
+		b.WriteString("\nPress [f] to view First Come First Serve Schedule")
 	}
 
 	b.WriteString("\n\nPress [q] to quit.")
 	return b.String()
 }
 
+// --> main function ONLY STARTS the program
 func main() {
-	p := tea.NewProgram(initialModel())
+	p := tea.NewProgram(initialModel(), tea.WithAltScreen())
 	if err := p.Start(); err != nil {
 		fmt.Println("Error running program:", err)
 		os.Exit(1)
