@@ -50,8 +50,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m model) View() string {
 	var b strings.Builder
 
-	// header
-	var headerStyle = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FF00FF"))
+	// header things, kinda like doiung css with lipgloss
+	var ( 
+		headerStyle = lipgloss.NewStyle().
+		Bold(true).
+		Foreground(lipgloss.Color("#FF00FF")).
+		Align(lipgloss.Center, lipgloss.Center)
+	)
 	b.WriteString(headerStyle.Render("Process Management Simulator") + "\n")
 	b.WriteString(strings.Repeat("\n", 10) + "\n")
 
