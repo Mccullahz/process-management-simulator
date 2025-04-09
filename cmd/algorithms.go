@@ -11,16 +11,17 @@ type ScheduledProcess struct {
 	TurnaroundTime int
 	WaitingTime    int
 }
-// will need to comment this up a bit better in the near future, works but isnt the prettiest
+
+// first come first serve scheduling algorithm, ezpz
 func FCFS(processes []Process) []ScheduledProcess {
-	// sort by arrival time
+	// sort process list by arrival time
 	sort.Slice(processes, func(i, j int) bool {
 		return processes[i].ArrivalTime < processes[j].ArrivalTime
 	})
 
 	currentTime := 0
 	schedule := []ScheduledProcess{}
-
+	// loop through all processes and calculate the start time, completion time, turnaround time, and waiting time, then append to schedule
 	for _, p := range processes {
 		if currentTime < p.ArrivalTime {
 			currentTime = p.ArrivalTime
@@ -37,10 +38,31 @@ func FCFS(processes []Process) []ScheduledProcess {
 			TurnaroundTime: turnaround,
 			WaitingTime:    waiting,
 		})
-
+		// set current time to completion time, where next process will start
 		currentTime = completion
 	}
+	// return schedule, to be used in main.go output
+	return schedule
+}
+// round robin scheduling algorithm
+// TODO: FINISH HIM!!!
+func RR(processes []Process) []ScheduledProcess {
+	// again, sort process list by arrival time
+	sort.Slice(processes, func(i, j int) bool {
+		return processes[i].ArrivalTime < processes[j].ArrivalTime
+	})
+
+	currentTime := 0
+	schedule := []ScheduledProcess{}
+	quantum := 2 // time slice for round robin, not sure what to really set this to, but 2 is a good starting point i think
+	
+	// similar to how we did fcfs above, but we need to keep track of the remaining burst time for each processand only allow them to run for the time quantum
+	// loop through all processes and calculate the start time, completion time, turnaround time, and waiting time, then append to schedule
+	for _, p := range processes {
+		if currentTime < p.ArrivalTime {
+			currentTime = p.ArrivalTime
+		}
+
 
 	return schedule
 }
-
