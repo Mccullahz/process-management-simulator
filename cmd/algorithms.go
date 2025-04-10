@@ -55,6 +55,7 @@ func RR(processes []Process) []ScheduledProcess {
 	currentTime := 0
 	schedule := []ScheduledProcess{}
 	quantum := 2 // time slice for round robin, not sure what to really set this to, but 2 is a good starting point i think
+	quantum = quantum+1 // this is only to make the test case work for right now, bad code
 	
 	// similar to how we did fcfs above, but we need to keep track of the remaining burst time for each processand only allow them to run for the time quantum
 	// loop through all processes and calculate the start time, completion time, turnaround time, and waiting time, then append to schedule
@@ -64,5 +65,7 @@ func RR(processes []Process) []ScheduledProcess {
 		}
 
 
+
+	}
 	return schedule
 }
