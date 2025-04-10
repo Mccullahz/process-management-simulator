@@ -10,10 +10,11 @@ import (
 )
 // --> initialization 
 type model struct {
-	processes         []cmd.Process
-	scheduled         []cmd.ScheduledProcess
-	cursor            int
-	showScheduled     bool
+	processes	[]cmd.Process
+	scheduled	[]cmd.ScheduledProcess
+	cursor		int
+	showFCFS	bool
+	showRR		bool
 }
 
 func initialModel() model {
@@ -24,7 +25,8 @@ func initialModel() model {
 		processes:     procs,
 		scheduled:     sched,
 		cursor:        0,
-		showScheduled: false,
+		showFCFS: false,
+		showRR: false,
 	}
 }
 
@@ -41,7 +43,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "q", "ctrl+c":
 			return m, tea.Quit
 		case "f":
-			m.showScheduled = !m.showScheduled
+			m.showFCFS = !m.showFCFS
+		case "r":
+			m.showRR = !m.showRR
 		}
 	}
 	return m, nil
@@ -57,12 +61,13 @@ func (m model) View() string {
 		headerStyle = lipgloss.NewStyle().
 		Bold(true).
 		Foreground(lipgloss.Color("#FF00FF")).
-		Align(lipgloss.Center, lipgloss.Center) 
+		Align(lipgloss.Center, lipgloss.Center).
+		Background(lipgloss.Color("#000000")) // why is this not doing anything?
 	)
 	b.WriteString(headerStyle.Render("Process Management Simulator") + "\n")
 	b.WriteString(strings.Repeat("\n", 10) + "\n")
 
-	if m.showScheduled { // FCFS VIEW
+	if m.showFCFS { // FCFS VIEW
 		b.WriteString("First Come First Served Scheduled:\n")
 		b.WriteString("PID  Arrival  Burst  Start  Complete  Turnaround  Waiting\n")
 		for _, p := range m.scheduled {
@@ -70,6 +75,14 @@ func (m model) View() string {
 				p.PID, p.ArrivalTime, p.BurstTime, p.StartTime, p.CompletionTime, p.TurnaroundTime, p.WaitingTime))
 		}
 		b.WriteString("\nPress [f] to go back to Generated Processes")
+		b.WriteString("\nPress [r] to view Round Robin Schedule")
+	} else if m.showRR { // RR VIEW
+		b.WriteString("Round Robin Scheduled:\n")
+		// rr logic here
+
+		b.WriteString("\nPress [r] to go back to Generated Processes")
+		b.WriteString("\nPress [f] to view First Come First Serve Schedule")
+
 	}else { // DEFAULT VIEW
 		b.WriteString("Unscheduled Generated Processes:\n")
 		b.WriteString("PID  Arrival  Burst\n")
@@ -77,6 +90,7 @@ func (m model) View() string {
 			b.WriteString(fmt.Sprintf("%3d  %7d  %5d\n", p.PID, p.ArrivalTime, p.BurstTime))
 		}
 		b.WriteString("\nPress [f] to view First Come First Serve Schedule")
+		b.WriteString("\nPress [r] to view Round Robin Schedule")
 	}
 
 	b.WriteString("\n\nPress [q] to quit.")
@@ -85,6 +99,7 @@ func (m model) View() string {
 
 // --> main function ONLY STARTS the program
 func main() {
+
 	p := tea.NewProgram(initialModel(), tea.WithAltScreen())
 	if err := p.Start(); err != nil {
 		fmt.Println("Error running program:", err)
