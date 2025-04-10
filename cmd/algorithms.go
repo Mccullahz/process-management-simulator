@@ -63,6 +63,20 @@ func RR(processes []Process) []ScheduledProcess {
 		if currentTime < p.ArrivalTime {
 			currentTime = p.ArrivalTime
 		}
+		start := currentTime
+		// if the process has a burst time greater than the quantum, we need to set the completion time to the current time + quantum
+		completion := start + quantum
+		if p.BurstTime > quantum {
+			// set the remaining burst time to the burst time - quantum
+			p.BurstTime = p.BurstTime - quantum
+			// set the current time to the completion time
+			currentTime = completion
+		} else {
+			// if the process has a burst time less than or equal to the quantum, we need to set the completion time to the current time + burst time
+			completion = start + p.BurstTime
+			currentTime = completion
+			p.BurstTime = 0
+		}
 
 
 
