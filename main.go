@@ -8,7 +8,7 @@ import (
 	tea"github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
-// --> initialization 
+// --> Initialization --- 
 type model struct {
 	processes	[]cmd.Process
 	scheduled	[]cmd.ScheduledProcess
@@ -64,6 +64,7 @@ func (m model) View() string {
 		Align(lipgloss.Center, lipgloss.Center).
 		Background(lipgloss.Color("#000000")) // why is this not doing anything?
 	)
+
 	b.WriteString(headerStyle.Render("Process Management Simulator") + "\n")
 	b.WriteString(strings.Repeat("\n", 10) + "\n")
 
@@ -74,15 +75,20 @@ func (m model) View() string {
 			b.WriteString(fmt.Sprintf("%3d  %7d  %5d  %5d  %8d  %10d  %7d\n",
 				p.PID, p.ArrivalTime, p.BurstTime, p.StartTime, p.CompletionTime, p.TurnaroundTime, p.WaitingTime))
 		}
+
 		b.WriteString("\nPress [f] to go back to Generated Processes")
 		b.WriteString("\nPress [r] to view Round Robin Schedule")
-	} else if m.showRR { // RR VIEW
+	} else if m.showRR { // RR VIEW --> FIXME: printing how we would do it in FCFS, this essentially only prints FCFS, not the round robin logic. 
 		b.WriteString("Round Robin Scheduled:\n")
-		// rr logic here
+		b.WriteString("Time Quantum: 2\n")
+		b.WriteString("PID  Arrival  Burst  Start  Complete  Turnaround  Waiting\n")
+		for _, p := range m.scheduled {
+			b.WriteString(fmt.Sprintf("%3d  %7d  %5d  %5d  %8d  %10d  %7d\n",
+			p.PID, p.ArrivalTime, p.BurstTime, p.StartTime, p.CompletionTime, p.TurnaroundTime, p.WaitingTime))
+		}
 
 		b.WriteString("\nPress [r] to go back to Generated Processes")
 		b.WriteString("\nPress [f] to view First Come First Serve Schedule")
-
 	}else { // DEFAULT VIEW
 		b.WriteString("Unscheduled Generated Processes:\n")
 		b.WriteString("PID  Arrival  Burst\n")
