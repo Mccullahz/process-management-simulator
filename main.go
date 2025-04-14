@@ -12,6 +12,8 @@ import (
 type model struct {
 	processes	[]cmd.Process
 	scheduled	[]cmd.ScheduledProcess
+	timeSlices	[]cmd.TimeSlice
+	schduledRR	[]cmd.ScheduledProcess
 	cursor		int
 	showFCFS	bool
 	showRR		bool
@@ -20,10 +22,13 @@ type model struct {
 func initialModel() model {
 	procs := cmd.GenerateProcesses(5, 10, 5) // processes, burst (max), arrival (max)
 	sched := cmd.FCFS(procs)
+	rrSched, rrSlices := cmd.RR(procs, 2) // schedule and time quantum from round robin
 
 	return model{
 		processes:     procs,
 		scheduled:     sched,
+		timeSlices:    rrSlices, 
+		schduledRR:    rrSched,
 		cursor:        0,
 		showFCFS: false,
 		showRR: false,
@@ -81,12 +86,19 @@ func (m model) View() string {
 	} else if m.showRR { // RR VIEW --> FIXME: printing how we would do it in FCFS, this essentially only prints FCFS, not the round robin logic. 
 		b.WriteString("Round Robin Scheduled:\n")
 		b.WriteString("Time Quantum: 2\n")
-		b.WriteString("PID  Arrival  Burst  Start  Complete  Turnaround  Waiting\n")
-		for _, p := range m.scheduled {
-			b.WriteString(fmt.Sprintf("%3d  %7d  %5d  %5d  %8d  %10d  %7d\n",
-			p.PID, p.ArrivalTime, p.BurstTime, p.StartTime, p.CompletionTime, p.TurnaroundTime, p.WaitingTime))
-		}
-
+		b.WriteString("PID  Arrival  Burst  Start  Complete\n")
+		for _, ts := range m.timeSlices {
+			// i think this is the correct way to do this?.. get the original process from schedule and then print arrival burst start end, break when slice is over
+			var original cmd.Process
+			for _, p := range m.processes {
+				if p.PID == ts.PID {
+					original = p
+					break
+				}
+			}
+		b.WriteString(fmt.Sprintf("%3d  %7d  %5d  %5d  %3d\n",
+			ts.PID, original.ArrivalTime, original.BurstTime, ts.Start, ts.End))
+	}
 		b.WriteString("\nPress [r] to go back to Generated Processes")
 		b.WriteString("\nPress [f] to view First Come First Serve Schedule")
 	}else { // DEFAULT VIEW
