@@ -5,33 +5,60 @@ import (
 	"os"
 	"strings"
 	"process-management-simulator/cmd"
-	tea"github.com/charmbracelet/bubbletea"
+
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/bubbles/list"
 )
-// --> Initialization --- 
+
+// --> Initialization models--- 
+type appState int
+// stealing app state logic from bubbletea examples for sexiness
+const (
+	stateMenu appState = iota
+	stateGenerated
+	stateFCFS
+	stateRR
+)
+
+type item string
+
+func (i item) Title() string       { return string(i) }
+func (i item) Description() string { return "" }
+func (i item) FilterValue() string { return string(i) }
+
 type model struct {
-	processes	[]cmd.Process
-	scheduled	[]cmd.ScheduledProcess
-	timeSlices	[]cmd.TimeSlice
-	schduledRR	[]cmd.ScheduledProcess
-	cursor		int
-	showFCFS	bool
-	showRR		bool
+	processes    []cmd.Process
+	scheduled    []cmd.ScheduledProcess
+	timeSlices   []cmd.TimeSlice
+	schduledRR   []cmd.ScheduledProcess
+	cursor       int
+	state        appState
+	list         list.Model
 }
 
 func initialModel() model {
-	procs := cmd.GenerateProcesses(5, 10, 5) // processes, burst (max), arrival (max)
+	procs := cmd.GenerateProcesses(5, 10, 5) // process data, burst (max), arrival (max)
 	sched := cmd.FCFS(procs)
 	rrSched, rrSlices := cmd.RR(procs, 2) // schedule and time quantum from round robin
 
+	items := []list.Item{
+		item("Generated Processes"),
+		item("First Come First Serve"),
+		item("Round Robin"),
+	}
+	delegate := list.NewDefaultDelegate()
+	l := list.New(items, delegate, 30, 14)
+	l.Title = "Select a Scheduling View"
+
 	return model{
-		processes:     procs,
-		scheduled:     sched,
-		timeSlices:    rrSlices, 
-		schduledRR:    rrSched,
-		cursor:        0,
-		showFCFS: false,
-		showRR: false,
+		processes:   procs,
+		scheduled:   sched,
+		timeSlices:  rrSlices,
+		schduledRR:  rrSched,
+		cursor:     0,
+		state:      stateMenu,
+		list:       l,
 	}
 }
 
@@ -40,6 +67,7 @@ func initialModel() model {
 func (m model) Init() tea.Cmd {
 	return nil
 }
+
 // update function to handle messages, e.g., key presses
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
@@ -47,14 +75,32 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "q", "ctrl+c":
 			return m, tea.Quit
-		case "f":
-			m.showFCFS = !m.showFCFS
-		case "r":
-			m.showRR = !m.showRR
+		case "enter":
+			if m.state == stateMenu {
+				i, ok := m.list.SelectedItem().(item)
+				if ok {
+					switch i {
+					case "First Come First Serve":
+						m.state = stateFCFS
+					case "Round Robin":
+						m.state = stateRR
+					}
+				}
+			}
+		case "esc", "backspace":
+			m.state = stateMenu
 		}
 	}
+
+	if m.state == stateMenu {
+		var cmd tea.Cmd
+		m.list, cmd = m.list.Update(msg)
+		return m, cmd
+	}
+
 	return m, nil
 }
+
 // view function to render (?) the bubbletea model
 func (m model) View() string {
 	var b strings.Builder
@@ -62,33 +108,34 @@ func (m model) View() string {
 	// header things, kinda like doiung css with lipgloss
 	// TODO: determine size of the terminal, then use that to center the header
 
-	var ( 
+	var (
 		headerStyle = lipgloss.NewStyle().
-		Bold(true).
-		Foreground(lipgloss.Color("#FF00FF")).
-		Align(lipgloss.Center, lipgloss.Center).
-		Background(lipgloss.Color("#000000")) // why is this not doing anything?
+			Bold(true).
+			Foreground(lipgloss.Color("#FF00FF")).
+			Align(lipgloss.Center, lipgloss.Center).
+			Background(lipgloss.Color("#000000")) // why is this not doing anything?
 	)
 
 	b.WriteString(headerStyle.Render("Process Management Simulator") + "\n")
-	b.WriteString(strings.Repeat("\n", 10) + "\n")
+	b.WriteString(strings.Repeat("\n", 7) + "\n")
 
-	if m.showFCFS { // FCFS VIEW
+
+	// FCFS VIEW
+	if m.state == stateFCFS {
 		b.WriteString("First Come First Served Scheduled:\n")
 		b.WriteString("PID  Arrival  Burst  Start  Complete  Turnaround  Waiting\n")
 		for _, p := range m.scheduled {
-			b.WriteString(fmt.Sprintf("%3d  %7d  %5d  %5d  %8d  %10d  %7d\n",
+			b.WriteString(fmt.Sprintf("%3d  %7d  %5d  %5d  %8d  %10d  %7d\n", // this is disgusting but functional, sorry world
 				p.PID, p.ArrivalTime, p.BurstTime, p.StartTime, p.CompletionTime, p.TurnaroundTime, p.WaitingTime))
 		}
+		b.WriteString("\n[esc] to return to menu")
 
-		b.WriteString("\nPress [f] to go back to Generated Processes")
-		b.WriteString("\nPress [r] to view Round Robin Schedule")
-	} else if m.showRR { // RR VIEW --> FIXME: printing how we would do it in FCFS, this essentially only prints FCFS, not the round robin logic. 
+	// RR VIEW
+	} else if m.state == stateRR {
 		b.WriteString("Round Robin Scheduled:\n")
 		b.WriteString("Time Quantum: 2\n")
 		b.WriteString("PID  Arrival  Burst  Start  Complete\n")
 		for _, ts := range m.timeSlices {
-			// i think this is the correct way to do this?.. get the original process from schedule and then print arrival burst start end, break when slice is over
 			var original cmd.Process
 			for _, p := range m.processes {
 				if p.PID == ts.PID {
@@ -96,19 +143,22 @@ func (m model) View() string {
 					break
 				}
 			}
-		b.WriteString(fmt.Sprintf("%3d  %7d  %5d  %5d  %3d\n",
-			ts.PID, original.ArrivalTime, original.BurstTime, ts.Start, ts.End))
-	}
-		b.WriteString("\nPress [r] to go back to Generated Processes")
-		b.WriteString("\nPress [f] to view First Come First Serve Schedule")
-	}else { // DEFAULT VIEW
+			b.WriteString(fmt.Sprintf("%3d  %7d  %5d  %5d  %3d\n",
+				ts.PID, original.ArrivalTime, original.BurstTime, ts.Start, ts.End))
+		}
+		b.WriteString("\n[esc] to return to menu")
+
+	// DEFAULT VIEW
+	} else if m.state == stateGenerated {
 		b.WriteString("Unscheduled Generated Processes:\n")
 		b.WriteString("PID  Arrival  Burst\n")
 		for _, p := range m.processes {
 			b.WriteString(fmt.Sprintf("%3d  %7d  %5d\n", p.PID, p.ArrivalTime, p.BurstTime))
 		}
-		b.WriteString("\nPress [f] to view First Come First Serve Schedule")
-		b.WriteString("\nPress [r] to view Round Robin Schedule")
+		b.WriteString("\n[esc] to return to menu")
+
+	}else {
+		b.WriteString(m.list.View())
 	}
 
 	b.WriteString("\n\nPress [q] to quit.")
