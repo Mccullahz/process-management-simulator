@@ -11,6 +11,13 @@ type ScheduledProcess struct {
 	TurnaroundTime int
 	WaitingTime    int
 }
+// time slice struct for round robin
+type TimeSlice struct {
+	PID    int
+	Start  int
+	End    int
+}
+
 
 // first come first serve scheduling algorithm, ezpz
 func FCFS(processes []Process) []ScheduledProcess {
@@ -45,40 +52,93 @@ func FCFS(processes []Process) []ScheduledProcess {
 	return schedule
 }
 // round robin scheduling algorithm
-// TODO: FINISH HIM!!!
-func RR(processes []Process) []ScheduledProcess {
-	// again, sort process list by arrival time
+func RR(processes []Process, quantum int) ([]ScheduledProcess, []TimeSlice) {
 	sort.Slice(processes, func(i, j int) bool {
 		return processes[i].ArrivalTime < processes[j].ArrivalTime
 	})
 
+	n := len(processes)
 	currentTime := 0
+	completed := 0
 	schedule := []ScheduledProcess{}
-	quantum := 2 // time slice for round robin, not sure what to really set this to, but 2 is a good starting point i think
-	
-	// similar to how we did fcfs above, but we need to keep track of the remaining burst time for each processand only allow them to run for the time quantum
-	// loop through all processes and calculate the start time, completion time, turnaround time, and waiting time, then append to schedule
+	queue := []Process{}
+	timeSlices := []TimeSlice{}
+	remaining := make(map[int]int)
+	visited := make(map[int]bool)
+	startTimes := make(map[int]int) // tracks first time a process starts
+
 	for _, p := range processes {
-		if currentTime < p.ArrivalTime {
-			currentTime = p.ArrivalTime
-		}
-		start := currentTime
-		// if the process has a burst time greater than the quantum, we need to set the completion time to the current time + quantum, EDIT: this is wrong, in round robin we can only incriment by the quantum.
-		completion := start + quantum
-		if p.BurstTime > quantum {
-			// set the remaining burst time to the burst time - quantum
-			p.BurstTime = p.BurstTime - quantum
-			// set the current time to the completion time
-			currentTime = completion
-		} else {
-			// if the process has a burst time less than or equal to the quantum, we need to set the completion time to the current time + burst time
-			completion = start + p.BurstTime
-			currentTime = completion
-			p.BurstTime = 0
-		}
-
-
-
+		remaining[p.PID] = p.BurstTime
 	}
-	return schedule
+
+	i := 0
+
+	for completed < n {
+		// add arriving processes to the queue
+		for i < n && processes[i].ArrivalTime <= currentTime {
+			if !visited[processes[i].PID] {
+				queue = append(queue, processes[i])
+				visited[processes[i].PID] = true
+			}
+			i++
+		}
+
+		if len(queue) == 0 {
+			currentTime++
+			continue
+		}
+
+		current := queue[0]
+		queue = queue[1:]
+
+		runTime := quantum
+		if remaining[current.PID] < quantum {
+			runTime = remaining[current.PID]
+		}
+
+		start := currentTime
+		currentTime += runTime
+		remaining[current.PID] -= runTime
+
+		// record the time slice
+		timeSlices = append(timeSlices, TimeSlice{
+			PID:   current.PID,
+			Start: start,
+			End:   currentTime,
+		})
+
+		// track the first time this process was scheduled
+		if _, ok := startTimes[current.PID]; !ok {
+			startTimes[current.PID] = start
+		}
+
+		// add newly arrived processes during this time window --> is this working how i think it should be?
+		for i < n && processes[i].ArrivalTime <= currentTime {
+			if !visited[processes[i].PID] {
+				queue = append(queue, processes[i])
+				visited[processes[i].PID] = true
+			}
+			i++
+		}
+
+		if remaining[current.PID] > 0 {
+			queue = append(queue, current)
+		} else {
+			completion := currentTime
+			turnaround := completion - current.ArrivalTime
+			waiting := turnaround - current.BurstTime
+
+			schedule = append(schedule, ScheduledProcess{
+				Process:        current,
+				StartTime:      startTimes[current.PID],
+				CompletionTime: completion,
+				TurnaroundTime: turnaround,
+				WaitingTime:    waiting,
+			})
+			completed++
+		}
+	}
+
+	return schedule, timeSlices
 }
+
