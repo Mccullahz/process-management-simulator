@@ -43,7 +43,6 @@ func initialModel() model {
 	rrSched, rrSlices := cmd.RR(procs, 2) // schedule and time quantum from round robin
 
 	items := []list.Item{
-		item("Generated Processes"),
 		item("First Come First Serve"),
 		item("Round Robin"),
 	}
@@ -119,6 +118,14 @@ func (m model) View() string {
 	b.WriteString(headerStyle.Render("Process Management Simulator") + "\n")
 	b.WriteString(strings.Repeat("\n", 7) + "\n")
 
+	// always show the unscheduled processesa
+	b.WriteString("Unscheduled Generated Processes:\n")
+	b.WriteString("PID  Arrival  Burst\n")
+	for _, p := range m.processes {
+		b.WriteString(fmt.Sprintf("%3d  %7d  %5d\n", p.PID, p.ArrivalTime, p.BurstTime))
+	}
+	b.WriteString("\n")
+
 
 	// FCFS VIEW
 	if m.state == stateFCFS {
@@ -148,14 +155,6 @@ func (m model) View() string {
 		}
 		b.WriteString("\n[esc] to return to menu")
 
-	// DEFAULT VIEW
-	} else if m.state == stateGenerated {
-		b.WriteString("Unscheduled Generated Processes:\n")
-		b.WriteString("PID  Arrival  Burst\n")
-		for _, p := range m.processes {
-			b.WriteString(fmt.Sprintf("%3d  %7d  %5d\n", p.PID, p.ArrivalTime, p.BurstTime))
-		}
-		b.WriteString("\n[esc] to return to menu")
 
 	}else {
 		b.WriteString(m.list.View())
@@ -167,11 +166,12 @@ func (m model) View() string {
 
 // --> main function ONLY STARTS the program
 func main() {
-
 	p := tea.NewProgram(initialModel(), tea.WithAltScreen())
 	if err := p.Start(); err != nil {
 		fmt.Println("Error running program:", err)
 		os.Exit(1)
 	}
 }
+
+
 
