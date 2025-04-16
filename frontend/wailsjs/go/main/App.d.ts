@@ -3,4 +3,8 @@
 
 export function FCFS():Promise<string>;
 
+export function GeneratedProcesses():Promise<string>;
+
 export function RR():Promise<string>;
+
+export function Regenerate():Promise<string>;

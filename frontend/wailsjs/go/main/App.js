@@ -6,6 +6,14 @@ export function FCFS() {
   return window['go']['main']['App']['FCFS']();
 }
 
+export function GeneratedProcesses() {
+  return window['go']['main']['App']['GeneratedProcesses']();
+}
+
 export function RR() {
   return window['go']['main']['App']['RR']();
+}
+
+export function Regenerate() {
+  return window['go']['main']['App']['Regenerate']();
 }
