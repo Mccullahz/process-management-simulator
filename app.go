@@ -5,16 +5,27 @@ import (
 	"fmt"
 	"context"
 )
-
-type App struct{}
-
+// App is a struct that holds the processes and provides methods to manipulate them
+type App struct{
+	processes []cmd.Process
+}
+// NewApp is the default Wails constructor for the App struct
 func NewApp() *App {
 	return &App{}
 }
 
+// runs the cmd.GenerateProcesses function to generate the process list and output the unscheduled processes
+func (a *App) GeneratedProcesses() string {
+	output := "Generated Processes:\n"
+	output += "PID  Arrival  Burst\n"
+	for _, p := range a.processes {
+		output += fmt.Sprintf("%3d  %7d  %5d\n", p.PID, p.ArrivalTime, p.BurstTime)
+	}
+	return output
+}
+// runs the cmd.FCFS (first come first serve) function and formats the output for js to display
 func (a *App) FCFS() string {
-	procs := cmd.GenerateProcesses(5, 10, 5)
-	scheduled := cmd.FCFS(procs)
+	scheduled := cmd.FCFS(a.processes)
 
 	output := "FCFS Scheduling Result:\n"
 	output += "PID  Arrival  Burst  Start  Complete\n"
@@ -24,19 +35,25 @@ func (a *App) FCFS() string {
 	}
 	return output
 }
-
+// runs the cmd.RR (round robin) function and formats the output for js to display
 func (a *App) RR() string {
-	procs := cmd.GenerateProcesses(5, 10, 5)
-	_, slices := cmd.RR(procs, 2)
+	_, slices := cmd.RR(a.processes, 2)
 
-	output := "Round Robin Scheduling (q=2):\n"
+	output := "Round Robin Scheduling (Time Quantum=2):\n"
 	output += "PID  Start  End\n"
 	for _, s := range slices {
 		output += fmt.Sprintf("%3d  %5d  %3d\n", s.PID, s.Start, s.End)
 	}
 	return output
 }
+// TODO: make a button for this in front end. 
+// regenerates the process list
+func (a *App) Regenerate() string {
+	a.processes = cmd.GenerateProcesses(5, 10, 5)
+	return "Processes regenerated."
+}
 
 // this is a dumb startup function, not actually doing anything, wails needs it in main.go though
 func (a *App) startup(ctx context.Context) {
+	a.processes = cmd.GenerateProcesses(5, 10, 5)
 }
