@@ -43,6 +43,8 @@ type model struct {
 	list         list.Model
 	progress     progress.Model
 	percent      float64
+	width       int
+	height      int
 }
 
 // --> main function ONLY STARTS the program
@@ -108,6 +110,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, tickCmd()
 		}
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
 
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -152,9 +157,7 @@ func (m model) View() string {
 	var (
 		headerStyle = lipgloss.NewStyle().
 			Bold(true).
-			Foreground(lipgloss.Color("#FF00FF")).
-			Align(lipgloss.Center, lipgloss.Center).
-			Background(lipgloss.Color("#000000")) // why is this not doing anything?
+			Foreground(lipgloss.Color("#FF00FF"))
 	)
 
 	// SEXY PROGRESS BAR :sunglasses:
@@ -167,6 +170,8 @@ func (m model) View() string {
 
 	b.WriteString(headerStyle.Render("Process Management Simulator") + "\n")
 	b.WriteString(strings.Repeat("\n", 7) + "\n")
+
+
 
 	// always show the unscheduled processes
 	b.WriteString("Unscheduled Generated Processes:\n")
