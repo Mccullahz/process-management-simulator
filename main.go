@@ -97,7 +97,12 @@ func (m model) Init() tea.Cmd {
 // update function to handle messages, e.g., key presses
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-
+		// window resizing NOW WORKING :)
+	case tea.WindowSizeMsg:
+		m.width = msg.Width
+		m.height = msg.Height
+		return m, nil
+	// tick message to update progress bar
 	case tickMsg:
 		if m.state == stateLoading {
 			m.percent += 0.25
@@ -110,10 +115,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, tickCmd()
 		}
-	case tea.WindowSizeMsg:
-		m.width = msg.Width
-		m.height = msg.Height
-
+	// key press messages to handle user input
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "q":
@@ -138,7 +140,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.state = stateMenu
 		}
 	}
-
+	// update the list model if the state is in the menu
 	if m.state == stateMenu {
 		var cmd tea.Cmd
 		m.list, cmd = m.list.Update(msg)
@@ -150,52 +152,66 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // view function to render (?) the bubbletea model
 func (m model) View() string {
+	// early exit if dimensions are not yet available
+	if m.width == 0 || m.height == 0 {
+		return ""
+	}
+
 	var b strings.Builder
 
 	// header things, kinda like doiung css with lipgloss
-	// TODO: determine size of the terminal, then use that to center the header
-	var (
-		headerStyle = lipgloss.NewStyle().
-			Bold(true).
-			Foreground(lipgloss.Color("#FF00FF"))
-	)
+	headerStyle := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(lipgloss.Color("#FF7CCB"))
+
+	header := headerStyle.Render("Process Management Simulator")
 
 	// SEXY PROGRESS BAR :sunglasses:
 	if m.state == stateLoading {
-		b.WriteString("\n\n")
-		b.WriteString(centerText(m.progress.ViewAs(m.percent)) + "\n\n")
-		b.WriteString(centerText("Loading process data..."))
-		return b.String()
+		loadingView := lipgloss.JoinVertical(
+			lipgloss.Center,
+			m.progress.ViewAs(m.percent),
+			"Loading process data...",
+		)
+
+		return lipgloss.Place(
+			m.width, m.height,
+			lipgloss.Center, lipgloss.Center,
+			loadingView,
+		)
 	}
 
-	b.WriteString(headerStyle.Render("Process Management Simulator") + "\n")
-	b.WriteString(strings.Repeat("\n", 7) + "\n")
+	// horizontally center the header
+	header = lipgloss.PlaceHorizontal(m.width, lipgloss.Center, header)
+	b.WriteString(header + "\n")
+	b.WriteString(strings.Repeat("\n", 2))
 
-
+	// so in order to center processes (body), we need to build a main body with lipgloss
+	var body strings.Builder
 
 	// always show the unscheduled processes
-	b.WriteString("Unscheduled Generated Processes:\n")
-	b.WriteString("PID  Arrival  Burst\n")
+	body.WriteString("Unscheduled Generated Processes:\n")
+	body.WriteString("PID  Arrival  Burst\n")
 	for _, p := range m.processes {
-		b.WriteString(fmt.Sprintf("%3d  %7d  %5d\n", p.PID, p.ArrivalTime, p.BurstTime))
+		body.WriteString(fmt.Sprintf("%3d  %7d  %5d\n", p.PID, p.ArrivalTime, p.BurstTime))
 	}
-	b.WriteString("\n")
+	body.WriteString("\n")
 
 	// FCFS VIEW
 	if m.state == stateFCFS {
-		b.WriteString("First Come First Served Scheduled:\n")
-		b.WriteString("PID  Arrival  Burst  Start  Complete  Turnaround  Waiting\n")
+		body.WriteString("First Come First Served Scheduled:\n")
+		body.WriteString("PID  Arrival  Burst  Start  Complete  Turnaround  Waiting\n")
 		for _, p := range m.scheduled {
-			b.WriteString(fmt.Sprintf("%3d  %7d  %5d  %5d  %8d  %10d  %7d\n", // this is disgusting but functional, sorry world
+			body.WriteString(fmt.Sprintf("%3d  %7d  %5d  %5d  %8d  %10d  %7d\n",
 				p.PID, p.ArrivalTime, p.BurstTime, p.StartTime, p.CompletionTime, p.TurnaroundTime, p.WaitingTime))
 		}
-		b.WriteString("\n[esc] to return to menu")
+		body.WriteString("\n[esc] to return to menu")
 
-		// RR VIEW
+	// RR VIEW
 	} else if m.state == stateRR {
-		b.WriteString("Round Robin Scheduled:\n")
-		b.WriteString("Time Quantum: 2\n")
-		b.WriteString("PID  Arrival  Burst  Start  Complete\n")
+		body.WriteString("Round Robin Scheduled:\n")
+		body.WriteString("Time Quantum: 2\n")
+		body.WriteString("PID  Arrival  Burst  Start  Complete\n")
 		for _, ts := range m.timeSlices {
 			var original cmd.Process
 			for _, p := range m.processes {
@@ -204,19 +220,29 @@ func (m model) View() string {
 					break
 				}
 			}
-			b.WriteString(fmt.Sprintf("%3d  %7d  %5d  %5d  %3d\n",
+			body.WriteString(fmt.Sprintf("%3d  %7d  %5d  %5d  %3d\n",
 				ts.PID, original.ArrivalTime, original.BurstTime, ts.Start, ts.End))
 		}
-		b.WriteString("\n[esc] to return to menu")
+		body.WriteString("\n[esc] to return to menu")
 
+	// LIST MENU VIEW
 	} else {
-		b.WriteString(m.list.View())
+		// center the list view horizontally
+		listView := lipgloss.PlaceHorizontal(m.width, lipgloss.Center, m.list.View())
+		body.WriteString(listView)
 	}
 
-	b.WriteString("\n\nPress [q] to quit.")
-	return b.String()
-}
+	body.WriteString("\n\nPress [q] to quit.")
 
+	// horizontally center everything except the progress bar
+	centeredContent := lipgloss.PlaceHorizontal(m.width, lipgloss.Center, body.String())
+
+	// add centered header and some spacing above the body
+	final := header + "\n\n" + centeredContent
+
+	// vertically center the whole view
+	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Top, final)
+}
 // necessary tick message for progress bar
 type tickMsg struct{}
 
