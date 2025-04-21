@@ -10,7 +10,7 @@ type Process struct {
 	ArrivalTime int
 }
 
-// generate a set of processes with PID, Burst Time, and Arrival Time
+// generate a set of processes with PID, Burst Time, Arrival Time and StateNew (algo tracking)
 func GenerateProcesses(numProcesses int, maxBurstTime int, maxArrivalTime int) []Process {
 	processes := make([]Process, numProcesses)
 	for i := 0; i < numProcesses; i++ {
