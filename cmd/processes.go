@@ -5,9 +5,9 @@ import (
 )
 
 type Process struct {
-	PID         int
-	BurstTime  int
-	ArrivalTime int
+	PID         int `json:"pid"`
+	BurstTime  int  `json:"burst_time"`
+	ArrivalTime int `json:"arrival_time"`
 }
 
 // generate a set of processes with PID, Burst Time, and Arrival Time
