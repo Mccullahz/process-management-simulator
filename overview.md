@@ -38,7 +38,7 @@ For each process, calculate the following scheduling metrics:\
     - **First-Come, First-Served (FCFS):** Processes are executed in the order they arrive in the ready queue.
     - **Shortest Job Next (SJN):** The process with the shortest burst time is executed next.
     - **Round Robin (RR):** Each process gets a fixed time slice, and if not completed, it moves back to the ready queue.
-    **Priority Scheduling:** Processes are executed based on priority, with the highest priority executed first.
+    - **Priority Scheduling:** Processes are executed based on priority, with the highest priority executed first.
     - Additional algorithms of your choice can be added for comparison.
 
 **6. Visualization (Optional but Encouraged):**\

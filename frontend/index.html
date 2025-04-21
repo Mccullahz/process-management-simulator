@@ -6,7 +6,24 @@
     <title>pms</title>
 </head>
 <body>
-<div id="app"></div>
-<script src="./src/main.js" type="module"></script>
+    <script src="./src/main.js" type="module"></script>
+    <div class="topBox"> 
+        <button onclick="runRegenerate()">Simulate</button>
+        Number of Processes:<input type="text" id="randomGenerated" placeholder="Type something here..." />
+    </div>
+    <div class="midBox"> 
+
+    </div>
+    <div class="columns">
+        <div class="column1">
+            <pre class="result" id="result1"></pre>
+        </div>
+        <div class="column2">
+            <pre class="result" id="result2"></pre>
+        </div>
+        <div class="column3">
+            <pre class="result" id="result3"></pre>
+        </div>
+    </div>
 </body>
 </html>
