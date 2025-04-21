@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 	"time"
+	"strconv"
 
 	"process-management-simulator/cmd"
 
@@ -35,20 +36,21 @@ func (i item) Description() string { return "" }
 func (i item) FilterValue() string { return string(i) }
 
 type model struct {
-	processes    []cmd.Process
-	scheduled    []cmd.ScheduledProcess
-	timeSlices   []cmd.TimeSlice
-	schduledRR   []cmd.ScheduledProcess
+	processes    	[]cmd.Process
+	scheduled    	[]cmd.ScheduledProcess
+	timeSlices   	[]cmd.TimeSlice
+	schduledRR   	[]cmd.ScheduledProcess
 	processSnapshot []cmd.ProcessStateSnapshot
-	cursor       int
-	state        appState
-	list         list.Model
-	numProcesses int
-	
-	progress     progress.Model
-	percent      float64
-	width       int
-	height      int
+	cursor       	int
+	state        	appState
+	list         	list.Model
+	numProcesses	int
+	inputBuffer	string
+	inputError	string
+	progress     	progress.Model
+	percent      	float64
+	width       	int
+	height      	int
 }
 
 // --> main function ONLY STARTS the program
@@ -111,49 +113,74 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.state == stateLoading {
 			m.percent += 0.25
 			if m.percent >= 1.0 {
-				// adjust amount of processes generated, max burst time, and max arrival time
-				m.processes = cmd.GenerateProcesses(5, 10, 5)
-				m.scheduled, m.processSnapshot = cmd.FCFS(m.processes) // schedule and snapshots from FCFS
-				m.schduledRR, m.timeSlices, m.processSnapshot = cmd.RR(m.processes, 2) // schedule, time quantum, and snapshots from round robin
-				m.state = stateMenu
+				// OLD VERSION adjust amount of processes generated, max burst time, and max arrival time
+				//m.processes = cmd.GenerateProcesses(5, 10, 5)
+				m.state = stateProcessInput
 				return m, nil
 			}
 			return m, tickCmd()
 		}
 	// key press messages to handle user input
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "q":
-			if m.state == stateMenu {
-				return m, tea.Quit
+	switch msg.String() {
+	case "q":
+		if m.state == stateMenu {
+			return m, tea.Quit
+		}
+		m.state = stateMenu
+		return m, nil
+	case "enter":
+		if m.state == stateProcessInput {
+			// convert inputBuffer for user input to int so we can validate
+			n, err := strconv.Atoi(m.inputBuffer)
+			if err != nil || n < 1 || n > 20 {
+				m.inputError = "Please enter a valid number (1–20)"
+				return m, nil
 			}
+			m.numProcesses = n
+			m.processes = cmd.GenerateProcesses(n, 10, 5)
+			m.scheduled, m.processSnapshot = cmd.FCFS(m.processes)
+			m.schduledRR, m.timeSlices, m.processSnapshot = cmd.RR(m.processes, 2)
 			m.state = stateMenu
+			m.inputError = ""
 			return m, nil
-		case "enter":
-			if m.state == stateMenu {
-				i, ok := m.list.SelectedItem().(item)
-				if ok {
-					switch i {
-					case "First Come First Serve":
-						m.state = stateFCFS
-					case "Round Robin":
-						m.state = stateRR
-					}
+		} else if m.state == stateMenu {
+			switch m.list.Index() {
+			case 0:
+				m.state = stateFCFS
+				return m, nil
+			case 1:
+				m.state = stateRR
+				return m, nil
+			}
+		}
+	case "backspace":
+		if m.state == stateProcessInput && len(m.inputBuffer) > 0 {
+			m.inputBuffer = m.inputBuffer[:len(m.inputBuffer)-1]
+			return m, nil
+		}
+	case "esc":
+		m.state = stateMenu
+		return m, nil
+	default:
+		if m.state == stateProcessInput {
+			if len(msg.String()) == 1 && msg.String()[0] >= '0' && msg.String()[0] <= '9' {
+				m.inputBuffer += msg.String()
 				}
 			}
-		case "esc", "backspace":
-			m.state = stateMenu
 		}
-	}
-	// update the list model if the state is in the menu
+			
+	// list navigation got removed when starting from a user input, have to re-add
 	if m.state == stateMenu {
 		var cmd tea.Cmd
 		m.list, cmd = m.list.Update(msg)
 		return m, cmd
+		}
 	}
-
 	return m, nil
+
 }
+
 
 // view function to render (?) the bubbletea model
 func (m model) View() string {
@@ -185,6 +212,16 @@ func (m model) View() string {
 			loadingView,
 		)
 	}
+	if m.state == stateProcessInput {
+	var ib strings.Builder
+	ib.WriteString("How many processes should be generated? (1–20)\n")
+	ib.WriteString("Input: " + m.inputBuffer + "\n")
+	if m.inputError != "" {
+		ib.WriteString("\n" + lipgloss.NewStyle().Foreground(lipgloss.Color("#FF0000")).Render(m.inputError))
+		}
+	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, ib.String())
+	}
+
 
 	// horizontally center the header
 	header = lipgloss.PlaceHorizontal(m.width, lipgloss.Center, header)
