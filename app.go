@@ -56,6 +56,10 @@ func (a *App) Regenerate() string {
 	return "Processes regenerated."
 }
 
+func (a *App) GetState() []cmd.ProcessStateSnapshot {
+	return a.state
+}
+
 // this is a dumb startup function, not actually doing anything, wails needs it in main.go though
 func (a *App) startup(ctx context.Context) {
 	a.processes = cmd.GenerateProcesses(5, 10, 5)

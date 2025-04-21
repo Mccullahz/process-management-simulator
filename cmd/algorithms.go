@@ -24,13 +24,13 @@ type ScheduledProcess struct {
 }
 // struct to hold snapshot of process information
 type ProcessStateSnapshot struct {
-	Time int
-	PID int
-	New []int
-	Ready []int
-	Running []int
-	Waiting []int
-	Terminated []int
+	Time int `json:"time"`
+	PID int	`json:"pid"`
+	New []int `json:"new"`
+	Ready []int `json:"ready"`
+	Running []int `json:"running"`
+	Waiting []int `json:"waiting"`
+	Terminated []int `json:"terminated"`
 }
 
 // time slice struct for round robin
