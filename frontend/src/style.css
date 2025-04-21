@@ -20,7 +20,39 @@ body {
     url("assets/fonts/nunito-v16-latin-regular.woff2") format("woff2");
 }
 
-#app {
-    height: 100vh;
+.topBox {
+    width: 100%;
+    background-color: #fa4616;
+    color: white;
+    padding-top: 20px;
+    padding-bottom: 20px;
     text-align: center;
+}
+
+.midBox {
+    width: 100%;
+    background-color: gray;
+    padding-top: 20px;
+    padding-bottom: 20px;
+    text-align: center;
+}
+
+.columns {
+    display: flex;
+    width: 100%;
+    height: 900px;
+}
+.column1 {
+    background-color: #1D374A;
+    flex: 1;
+}
+
+.column2 {
+    background-color: #1D375A;
+    flex: 1;
+}
+
+.column3 {
+    background-color:  #1D376A;
+    flex: 1;
 }
