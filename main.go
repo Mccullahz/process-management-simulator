@@ -20,7 +20,8 @@ type appState int
 
 // stealing app state logic from bubbletea examples for sexiness
 const (
-	stateLoading appState = iota
+	stateLoading appState = iota // initial loading
+	stateProcessInput // for user input (numProcesses)
 	stateMenu
 	stateGenerated
 	stateFCFS
@@ -38,9 +39,12 @@ type model struct {
 	scheduled    []cmd.ScheduledProcess
 	timeSlices   []cmd.TimeSlice
 	schduledRR   []cmd.ScheduledProcess
+	processSnapshot []cmd.ProcessStateSnapshot
 	cursor       int
 	state        appState
 	list         list.Model
+	numProcesses int
+	
 	progress     progress.Model
 	percent      float64
 	width       int
@@ -107,9 +111,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if m.state == stateLoading {
 			m.percent += 0.25
 			if m.percent >= 1.0 {
-				m.processes = cmd.GenerateProcesses(5, 10, 5) // process data, burst (max), arrival (max)
-				m.scheduled = cmd.FCFS(m.processes)
-				m.schduledRR, m.timeSlices = cmd.RR(m.processes, 2) // schedule and time quantum from round robin
+				// adjust amount of processes generated, max burst time, and max arrival time
+				m.processes = cmd.GenerateProcesses(5, 10, 5)
+				m.scheduled, m.processSnapshot = cmd.FCFS(m.processes) // schedule and snapshots from FCFS
+				m.schduledRR, m.timeSlices, m.processSnapshot = cmd.RR(m.processes, 2) // schedule, time quantum, and snapshots from round robin
 				m.state = stateMenu
 				return m, nil
 			}
