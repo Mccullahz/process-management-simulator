@@ -8,6 +8,7 @@ import (
 // App is a struct that holds the processes and provides methods to manipulate them
 type App struct{
 	processes []cmd.Process
+	state []cmd.ProcessStateSnapshot
 }
 // NewApp is the default Wails constructor for the App struct
 func NewApp() *App {
@@ -25,7 +26,8 @@ func (a *App) GeneratedProcesses() string {
 }
 // runs the cmd.FCFS (first come first serve) function and formats the output for js to display
 func (a *App) FCFS() string {
-	scheduled := cmd.FCFS(a.processes)
+	scheduled, state := cmd.FCFS(a.processes)
+	a.state = state
 
 	output := "FCFS Scheduling Result:\n"
 	output += "PID  Arrival  Burst  Start  Complete\n"
@@ -37,7 +39,8 @@ func (a *App) FCFS() string {
 }
 // runs the cmd.RR (round robin) function and formats the output for js to display
 func (a *App) RR() string {
-	_, slices := cmd.RR(a.processes, 2)
+	_, slices, state := cmd.RR(a.processes, 2)
+	a.state = state
 
 	output := "Round Robin Scheduling (Time Quantum=2):\n"
 	output += "PID  Start  End\n"
