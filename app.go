@@ -1,15 +1,17 @@
 package main
 
 import (
-	"process-management-simulator/cmd"
-	"fmt"
 	"context"
+	"fmt"
+	"process-management-simulator/cmd"
 )
+
 // App is a struct that holds the processes and provides methods to manipulate them
-type App struct{
+type App struct {
 	processes []cmd.Process
-	state []cmd.ProcessStateSnapshot
+	state     []cmd.ProcessStateSnapshot
 }
+
 // NewApp is the default Wails constructor for the App struct
 func NewApp() *App {
 	return &App{}
@@ -24,6 +26,7 @@ func (a *App) GeneratedProcesses() string {
 	}
 	return output
 }
+
 // runs the cmd.FCFS (first come first serve) function and formats the output for js to display
 func (a *App) FCFS() string {
 	scheduled, state := cmd.FCFS(a.processes)
@@ -37,6 +40,7 @@ func (a *App) FCFS() string {
 	}
 	return output
 }
+
 // runs the cmd.RR (round robin) function and formats the output for js to display
 func (a *App) RR() string {
 	_, slices, state := cmd.RR(a.processes, 2)
@@ -49,7 +53,8 @@ func (a *App) RR() string {
 	}
 	return output
 }
-// TODO: make a button for this in front end. 
+
+// TODO: make a button for this in front end.
 // regenerates the process list
 func (a *App) Regenerate() string {
 	a.processes = cmd.GenerateProcesses(5, 10, 5)
