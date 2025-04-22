@@ -151,6 +151,10 @@ async function simRR() {
   }
 }
 
+window.Regenerate = function () {
+  Regenerate().then((result) => {}).catch(console.error);
+};
+
 window.Simulate = function () {
   const selectedAlgo = document.getElementById("algoSelect").value;
   if (selectedAlgo === "FCFS") {
