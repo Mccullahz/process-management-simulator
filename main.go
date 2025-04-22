@@ -267,6 +267,30 @@ func (m model) View() string {
 		}
 		body.WriteString("\n[esc] to return to menu")
 
+		body.WriteString("\n\n")
+
+		queueStyle := lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).Padding(1, 2)
+
+		newStyle := queueStyle.Copy().BorderForeground(lipgloss.Color("#7D56F4")).Foreground(lipgloss.Color("#7D56F4"))
+		readyStyle := queueStyle.Copy().BorderForeground(lipgloss.Color("#00C49A")).Foreground(lipgloss.Color("#00C49A"))
+		runningStyle := queueStyle.Copy().BorderForeground(lipgloss.Color("#FF8700")).Foreground(lipgloss.Color("#FF8700"))
+		waitingStyle := queueStyle.Copy().BorderForeground(lipgloss.Color("#FF5C8A")).Foreground(lipgloss.Color("#FF5C8A"))
+		terminatedStyle := queueStyle.Copy().BorderForeground(lipgloss.Color("#AAAAAA")).Foreground(lipgloss.Color("#AAAAAA"))
+
+		if len(m.processSnapshot) > 0 {
+			snapshot := m.processSnapshot[0] // TODO: Replace with current time step index later
+
+			newBox := newStyle.Render("New:\n" + joinPIDs(snapshot.New))
+			readyBox := readyStyle.Render("Ready:\n" + joinPIDs(snapshot.Ready))
+			runningBox := runningStyle.Render("Running:\n" + joinPIDs(snapshot.Running))
+			waitingBox := waitingStyle.Render("Waiting:\n" + joinPIDs(snapshot.Waiting))
+			terminatedBox := terminatedStyle.Render("Terminated:\n" + joinPIDs(snapshot.Terminated))
+
+			queues := lipgloss.JoinHorizontal(lipgloss.Top, newBox, readyBox, runningBox, waitingBox, terminatedBox)
+			body.WriteString("Process State Queues:\n\n")
+			body.WriteString(queues)
+		}
+
 	// LIST MENU VIEW
 	} else {
 		// center the list view horizontally
@@ -293,6 +317,16 @@ func tickCmd() tea.Cmd {
 		return tickMsg{}
 	})
 }
+
+// joinPIDs takes a slice of PIDs and returns a string with the PIDs joined by commas
+func joinPIDs(pids []int) string {
+	var ids []string
+	for _, pid := range pids {
+		ids = append(ids, fmt.Sprintf("P%d", pid))
+	}
+	return strings.Join(ids, "\n")
+}
+
 
 // ansi color-safe text centering
 func centerText(s string) string {
