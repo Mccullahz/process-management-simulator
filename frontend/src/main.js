@@ -6,10 +6,12 @@ import {FCFS, RR, GeneratedProcesses, Regenerate, GetState} from '../wailsjs/go/
 
 {/* VERY VERY ROUGH HOW TO OUTPUT ALGOS IN WINDOW, CAN CHANGE AS MUCH AS NEEDED*/}
 
-
-function simFCFS(){
-  Promise.all([GeneratedProcesses(), FCFS(), GetState()]).then((result) => {
-    const processes = result[0].split('\n');
+async function simFCFS() {
+  try {
+    const GenProcesses = await GeneratedProcesses();
+    const fcfsResult = await FCFS();
+    const state = await GetState();
+    const processes = GenProcesses.split('\n');
     const res1 = document.getElementById("result1");
     res1.innerHTML = ''; 
     processes.forEach((line, i) => {
@@ -20,7 +22,7 @@ function simFCFS(){
       div.textContent = line;
       res1.appendChild(div);
     });
-    const FCFSProc = result[1].split('\n');
+    const FCFSProc = fcfsResult.split('\n');
     const res2 = document.getElementById("result2");
     res2.innerHTML = ''; 
     FCFSProc.forEach((line, i) => {
@@ -34,7 +36,7 @@ function simFCFS(){
       div.textContent = line;
       res2.appendChild(div);
     });
-    result[2].forEach((snapshot, timeIndex) => {
+    state.forEach((snapshot, timeIndex) => {
       setTimeout(() => {
       snapshot.new.forEach((PID) => {
         const target = document.getElementById(`Proc-${PID}`);
@@ -64,12 +66,18 @@ function simFCFS(){
       });
       }, (timeIndex)*500)
     });
-  }).catch(console.error);
+
+  } catch (err) {
+    console.error("Error in simFCFS:", err);
+  }
 }
-function simRR(){
-  Promise.all([GeneratedProcesses(), RR(), GetState()]).then((result) => {
-    console.log(result[2])
-    const processes = result[0].split('\n');
+
+async function simRR() {
+  try {
+    const GenProcesses = await GeneratedProcesses();
+    const RRResult = await RR();
+    const state = await GetState();
+    const processes = GenProcesses.split('\n');
     const res1 = document.getElementById("result1");
     res1.innerHTML = ''; 
     processes.forEach((line, i) => {
@@ -80,7 +88,7 @@ function simRR(){
       div.textContent = line;
       res1.appendChild(div);
     });
-    const RRProc = result[1].split('\n');
+    const RRProc = RRResult.split('\n');
     const res2 = document.getElementById("result2");
     res2.innerHTML = ''; 
     RRProc.forEach((line, i) => {
@@ -97,7 +105,7 @@ function simRR(){
     });
     let OpIndex=0
     let prevRun=-1
-    result[2].forEach((snapshot, timeIndex) => {
+    state.forEach((snapshot, timeIndex) => {
       setTimeout(() => {
       snapshot.new.forEach((PID) => {
         const target = document.getElementById(`Proc-${PID}`);
@@ -131,9 +139,10 @@ function simRR(){
       });
       }, (timeIndex)*500)
     });
-  }).catch(console.error);
+  } catch (err) {
+    console.error("Error in simFCFS:", err);
+  }
 }
-
 
 window.Simulate = function () {
   const selectedAlgo = document.getElementById("algoSelect").value;

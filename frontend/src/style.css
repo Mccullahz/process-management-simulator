@@ -34,8 +34,12 @@ body {
     background-color: gray;
     padding-top: 20px;
     padding-bottom: 20px;
-    text-align: center;
 }
+
+.midBox p {
+    display: inline-block;
+    margin: 0 10px;
+  }
 
 .columns {
     display: flex;
@@ -51,3 +55,9 @@ body {
     background-color: #1D375A;
     flex: 1;
 }
+
+.color-new { color: white; }
+.color-running { color: green; }
+.color-ready { color: yellow; }
+.color-waiting { color: orange; }
+.color-terminated { color: red; }
