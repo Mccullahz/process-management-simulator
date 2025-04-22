@@ -4,6 +4,34 @@
     <meta charset="UTF-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>pms</title>
+
+    <style>
+        .legend {
+          display: flex;
+          gap: 15px;
+          margin-top: 20px;
+          padding: 10px;
+          font-family: sans-serif;
+          background: #f5f5f5;
+          border: 1px solid #ccc;
+          border-radius: 6px;
+          width: fit-content;
+        }
+    
+        .legend-item {
+          display: flex;
+          align-items: center;
+          font-size: 14px;
+          gap: 6px;
+        }
+    
+        .color-box {
+          width: 20px;
+          height: 20px;
+          border: 2px solid black;
+          border-radius: 4px;
+        }
+      </style>
 </head>
 <body>
     <script src="./src/main.js" type="module"></script>
@@ -11,7 +39,7 @@
         <button onclick="Simulate()">Simulate</button>
         <button onclick="Regenerate()">Regenerate</button>
         <br>
-        Number of Processes: <input type="text" style="font-size: 18px; padding: 10px; height: 5px; width: 183px;" id="randomGenerated" placeholder="Type something here..." />
+        Number of Processes: <input type="text" style="font-size: 18px; padding: 10px; height: 5px; width: 183px; " id="randomGenerated" placeholder="Type something here..." />
         <br>
         Algorithm:
         <select id="algoSelect">
@@ -20,11 +48,24 @@
         </select>
     </div>
     <div class="midBox"> 
-   <p class="color-new">New</p>
-        <p class="color-waiting">Waiting</p>
-        <p class="color-ready">Ready</p>
-        <p class="color-running">Running</p>
-        <p class="color-terminated">Terminated</p>
+        <div class="midBox legend">
+            <div class="legend-item">
+              <span class="color-box" style="background-color: white;"></span> New
+            </div>
+            <div class="legend-item">
+              <span class="color-box" style="background-color: orange;"></span> Waiting
+            </div>
+            <div class="legend-item">
+              <span class="color-box" style="background-color: yellow;"></span> Ready
+            </div>
+            <div class="legend-item">
+              <span class="color-box" style="background-color: green;"></span> Running
+            </div>
+            <div class="legend-item">
+              <span class="color-box" style="background-color: red;"></span> Terminated
+            </div>
+          </div>
+          
     </div>
     <div class="columns">
         <div class="column1">
