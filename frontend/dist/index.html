@@ -4,17 +4,28 @@
     <meta charset="UTF-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>pms</title>
-  <script type="module" crossorigin src="/assets/index.cb9d73a8.js"></script>
-  <link rel="stylesheet" href="/assets/index.7c68af12.css">
+  <script type="module" crossorigin src="/assets/index.a6218b06.js"></script>
+  <link rel="stylesheet" href="/assets/index.f13cce73.css">
 </head>
 <body>
     
     <div class="topBox"> 
-        <button onclick="runRegenerate()">Simulate</button>
+        <button onclick="Simulate()">Simulate</button>
+        <button onclick="Regenerate()">Regenerate</button>
+        <br>
         Number of Processes : <input type="text" style="font-size: 18px; padding: 10px; height: 5px; width: 183px;" id="randomGenerated" placeholder="Type something here..." />
+        <br>
+        <select id="algoSelect">
+            <option value="FCFS">First Come First Serve (FCFS)</option>
+            <option value="RR">Round Robin (RR)</option>
+        </select>
     </div>
     <div class="midBox"> 
-
+   <p class="color-new">New</p>
+        <p class="color-waiting">Waiting</p>
+        <p class="color-ready">Ready</p>
+        <p class="color-running">Running</p>
+        <p class="color-terminated">Terminated</p>
     </div>
     <div class="columns">
         <div class="column1">
@@ -22,9 +33,6 @@
         </div>
         <div class="column2">
             <pre class="result" id="result2"></pre>
-        </div>
-        <div class="column3">
-            <pre class="result" id="result3"></pre>
         </div>
     </div>
 </body>

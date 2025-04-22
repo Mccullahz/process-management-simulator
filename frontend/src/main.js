@@ -80,6 +80,7 @@ async function simRR() {
     const GenProcesses = await GeneratedProcesses();
     const RRResult = await RR();
     const state = await GetState();
+    console.log(state)
     const processes = GenProcesses.split('\n');
     const res1 = document.getElementById("result1");
     res1.innerHTML = ''; 
@@ -102,7 +103,6 @@ async function simRR() {
       const pid = parseInt(parts[0]);
       if (!isNaN(pid)) {
         div.id = `RRProc-${i-2}`;
-        console.log(div.id)
         div.style.opacity = '0';
       }
       div.textContent = line;
@@ -136,6 +136,12 @@ async function simRR() {
         const target = document.getElementById(`Proc-${PID}`);
         if (target) {
           target.style.color = 'green';
+        }
+      });
+      snapshot.waiting.forEach((PID) => {
+        const target = document.getElementById(`Proc-${PID}`);
+        if (target) {
+          target.style.color = 'orange';
         }
       });
       snapshot.terminated.forEach((PID) => {
