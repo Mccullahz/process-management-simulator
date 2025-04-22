@@ -14,6 +14,7 @@ async function simFCFS() {
     const processes = GenProcesses.split('\n');
     const res1 = document.getElementById("result1");
     res1.innerHTML = ''; 
+    //Generates a line for each processes (left side)
     processes.forEach((line, i) => {
       const div = document.createElement('div');
       const parts = line.trim().split(/\s+/);
@@ -25,6 +26,7 @@ async function simFCFS() {
     const FCFSProc = fcfsResult.split('\n');
     const res2 = document.getElementById("result2");
     res2.innerHTML = ''; 
+    //Generates a line for the state changes (right side)
     FCFSProc.forEach((line, i) => {
       const div = document.createElement('div');
       const parts = line.trim().split(/\s+/);
@@ -36,6 +38,7 @@ async function simFCFS() {
       div.textContent = line;
       res2.appendChild(div);
     });
+    //goes through the snapshots and then gets changes the color of processes based on state
     state.forEach((snapshot, timeIndex) => {
       setTimeout(() => {
       snapshot.new.forEach((PID) => {
@@ -80,6 +83,7 @@ async function simRR() {
     const processes = GenProcesses.split('\n');
     const res1 = document.getElementById("result1");
     res1.innerHTML = ''; 
+     //Generates a line for each processes (left side)
     processes.forEach((line, i) => {
       const div = document.createElement('div');
       const parts = line.trim().split(/\s+/);
@@ -91,6 +95,7 @@ async function simRR() {
     const RRProc = RRResult.split('\n');
     const res2 = document.getElementById("result2");
     res2.innerHTML = ''; 
+    //Generates a line for the state changes (right side)
     RRProc.forEach((line, i) => {
       const div = document.createElement('div');
       const parts = line.trim().split(/\s+/);
@@ -103,8 +108,10 @@ async function simRR() {
       div.textContent = line;
       res2.appendChild(div);
     });
+    //vars to monitor state change
     let OpIndex=0
     let prevRun=-1
+    //goes through the snapshots and then gets changes the color of processes based on state
     state.forEach((snapshot, timeIndex) => {
       setTimeout(() => {
       snapshot.new.forEach((PID) => {
