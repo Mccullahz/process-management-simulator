@@ -8,19 +8,11 @@
 <body>
     <script src="./src/main.js" type="module"></script>
     <div class="topBox"> 
-        <button onclick="Simulate()">Simulate</button>
-        Number of Processes:<input type="text" id="randomGenerated" placeholder="Type something here..." />
-        <select id="algoSelect">
-            <option value="FCFS">First Come First Serve (FCFS)</option>
-            <option value="RR">Round Robin (RR)</option>
-        </select>
+        <button onclick="runRegenerate()">Simulate</button>
+        Number of Processes : <input type="text" style="font-size: 18px; padding: 10px; height: 5px; width: 183px;" id="randomGenerated" placeholder="Type something here..." />
     </div>
     <div class="midBox"> 
-        <p class="color-new">New</p>
-        <p class="color-waiting">Waiting</p>
-        <p class="color-ready">Ready</p>
-        <p class="color-running">Running</p>
-        <p class="color-terminated">Terminated</p>
+
     </div>
     <div class="columns">
         <div class="column1">
@@ -28,6 +20,9 @@
         </div>
         <div class="column2">
             <pre class="result" id="result2"></pre>
+        </div>
+        <div class="column3">
+            <pre class="result" id="result3"></pre>
         </div>
     </div>
 </body>
