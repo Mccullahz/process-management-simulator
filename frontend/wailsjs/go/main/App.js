@@ -10,6 +10,10 @@ export function GeneratedProcesses() {
   return window['go']['main']['App']['GeneratedProcesses']();
 }
 
+export function GetState() {
+  return window['go']['main']['App']['GetState']();
+}
+
 export function RR() {
   return window['go']['main']['App']['RR']();
 }

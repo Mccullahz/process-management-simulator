@@ -4,14 +4,18 @@
     <meta charset="UTF-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>pms</title>
-  <script type="module" crossorigin src="/assets/index.573d8e30.js"></script>
-  <link rel="stylesheet" href="/assets/index.4fcb9c2d.css">
+  <script type="module" crossorigin src="/assets/index.9e2bf57c.js"></script>
+  <link rel="stylesheet" href="/assets/index.44be0818.css">
 </head>
 <body>
     
     <div class="topBox"> 
-        <button onclick="runRegenerate()">Simulate</button>
+        <button onclick="Simulate()">Simulate</button>
         Number of Processes:<input type="text" id="randomGenerated" placeholder="Type something here..." />
+        <select id="algoSelect">
+            <option value="FCFS">First Come First Serve (FCFS)</option>
+            <option value="RR">Round Robin (RR)</option>
+        </select>
     </div>
     <div class="midBox"> 
 
@@ -22,9 +26,6 @@
         </div>
         <div class="column2">
             <pre class="result" id="result2"></pre>
-        </div>
-        <div class="column3">
-            <pre class="result" id="result3"></pre>
         </div>
     </div>
 </body>
