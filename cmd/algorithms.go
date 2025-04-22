@@ -46,6 +46,7 @@ func buildSnapshot(time int, processes []Process, activePID int, activeState Pro
 	newList := []int{}
 	readyList := []int{}
 	runningList := []int{}
+	waitingList := []int{}
 	terminatedList := []int{}
 
 	for _, p := range processes {
@@ -53,11 +54,14 @@ func buildSnapshot(time int, processes []Process, activePID int, activeState Pro
 		case isTerminated(p.PID, completed):
 			terminatedList = append(terminatedList, p.PID)
 		case p.PID == activePID:
-			if activeState == StateRunning {
+			switch activeState {
+			case StateRunning:
 				runningList = append(runningList, p.PID)
-			} else if activeState == StateTerminated {
+			case StateWaiting:
+				waitingList = append(waitingList, p.PID)
+			case StateTerminated:
 				terminatedList = append(terminatedList, p.PID)
-			}
+		}
 		case p.ArrivalTime <= time:
 			readyList = append(readyList, p.PID)
 		default:
@@ -71,6 +75,7 @@ func buildSnapshot(time int, processes []Process, activePID int, activeState Pro
 		New:        newList,
 		Ready:      readyList,
 		Running:    runningList,
+		Waiting:    waitingList,
 		Terminated: terminatedList,
 	}
 }
@@ -99,6 +104,8 @@ func FCFS(processes []Process) ([]ScheduledProcess, []ProcessStateSnapshot) {
 	// loop through all processes and calculate the start time, completion time, turnaround time, and waiting time, then append to schedule
 	for _, p := range processes {
 		if currentTime < p.ArrivalTime {
+			// need an idle snapshot to make waiting work
+			snapshots = append(snapshots, buildSnapshot(currentTime, processes, -1, "", schedule))
 			currentTime = p.ArrivalTime
 		}
 		// create a snapshot of the process state before scheduling
