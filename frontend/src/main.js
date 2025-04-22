@@ -19,7 +19,7 @@ async function simFCFS() {
       const div = document.createElement('div');
       const parts = line.trim().split(/\s+/);
       const pid = parseInt(parts[0]);
-      div.id = `Proc-${pid}`;
+      div.id = `Proc-${pid}`; //used to ID this div later for color effects
       div.textContent = line;
       res1.appendChild(div);
     });
@@ -31,7 +31,7 @@ async function simFCFS() {
       const div = document.createElement('div');
       const parts = line.trim().split(/\s+/);
       const pid = parseInt(parts[0]);
-      if (!isNaN(pid)) {
+      if (!isNaN(pid)) { //prevents the header and sub headers of the tables to stay visible
         div.id = `FCFSProc-${pid}`;
         div.style.opacity = '0';
       }
