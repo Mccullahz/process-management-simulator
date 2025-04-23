@@ -76,7 +76,7 @@ Both the GUI Wails and CLI Bubbletea versions share the same logic through the `
 
 ## Installation
 1. The simplest method to running this application is to install the executable directly from this repository, and then run:
-    a.```bash
+    ```bash
     ./Process-Management-Simulator
     ```
 2. Alternatively, you can clone the repository and run it locally following the steps below.
