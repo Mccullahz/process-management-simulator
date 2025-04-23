@@ -10,4 +10,4 @@ export function GetState():Promise<Array<cmd.ProcessStateSnapshot>>;
 
 export function RR():Promise<string>;
 
-export function Regenerate():Promise<string>;
+export function Regenerate(arg1:number):Promise<string>;

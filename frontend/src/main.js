@@ -166,7 +166,11 @@ async function simRR() {
 }
 
 window.Regenerate = function () {
-  Regenerate().then((result) => {}).catch(console.error);
+  let count = parseInt(document.getElementById("randomGenerated").value, 10);
+  if (isNaN(count) || count <= 0) {
+    count = 5;
+  }
+  window.go.main.App.Regenerate(count).then((result) => {}).catch((err) => { console.error("Failed to regenerate:", err);});
 };
 
 window.Simulate = function () {

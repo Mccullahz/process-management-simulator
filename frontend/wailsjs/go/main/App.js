@@ -18,6 +18,6 @@ export function RR() {
   return window['go']['main']['App']['RR']();
 }
 
-export function Regenerate() {
-  return window['go']['main']['App']['Regenerate']();
+export function Regenerate(arg1) {
+  return window['go']['main']['App']['Regenerate'](arg1);
 }

@@ -56,8 +56,8 @@ func (a *App) RR() string {
 
 // TODO: make a button for this in front end.
 // regenerates the process list
-func (a *App) Regenerate() string {
-	a.processes = cmd.GenerateProcesses(5, 10, 5)
+func (a *App) Regenerate(count int) string {
+	a.processes = cmd.GenerateProcesses(count, 10, 5)
 	return "Processes regenerated."
 }
 
