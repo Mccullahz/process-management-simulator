@@ -124,7 +124,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "snapshot":
 			if m.state == stateRR {
 				if m.currentSnapshotIndex < len(m.processSnapshot)-1 {
-					m.currentSnapshotIndex = 0
+					m.currentSnapshotIndex++
 					return m, tickCmd("snapshot")
 				}
 			}
