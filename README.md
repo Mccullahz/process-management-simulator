@@ -48,7 +48,7 @@ These bindings ensure that the GUI remains reactive and displays current schedul
 # Algorithms (cmd/algorithms.go):
 The core CPU scheduling algorithms are implemented in the cmd package. This includes:
 
-- **FCFS (First-Come-First-Serve)
+- **FCFS (First-Come-First-Serve)**
 
     - Processes are sorted by arrival time and run in that order.
 
@@ -56,7 +56,7 @@ The core CPU scheduling algorithms are implemented in the cmd package. This incl
 
     - A visual timeline is maintained for later state-based rendering.
 
-- **Round Robin (RR)
+- **Round Robin (RR)**
 
     - Processes share CPU time in fixed time slices (quantum = 2).
 
@@ -64,19 +64,19 @@ The core CPU scheduling algorithms are implemented in the cmd package. This incl
 
     - Simulates context switching and manages process queues at each tick.
 
-- **Process Generation
+- **Process Generation**
 
     - GenerateProcesses(count, maxArrival, maxBurst) creates a reproducible list of pseudo-random processes.
 
     - Useful for testing both the CLI and GUI without needing manual input.
 
-- **Process State Snapshots
+- **Process State Snapshots**
 
     - Both algorithms track queue transitions: New -> Ready -> Running -> Waiting -> Terminated.
 
 State is returned to the frontend for step-by-step visual replay of scheduling events.
 
-## Shared Across GUI and CLI
+## Shared Across GUI and CLI**
 Both the CLI version (Bubbletea based) and the GUI version (Wails based) share the same backedn logic found in the cmd package. This ensures consistency across both interfaces and simplifies the (short term) development life cycle.
 
 # Installation and Usage
