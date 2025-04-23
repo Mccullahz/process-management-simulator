@@ -21,6 +21,8 @@ async function simFCFS() {
       const pid = parseInt(parts[0]);
       div.id = `Proc-${pid}`; //used to ID this div later for color effects
       div.textContent = line;
+      div.style.fontSize = '20px';
+      div.style.webkitTextStroke = '.5px black';
       res1.appendChild(div);
     });
     const FCFSProc = fcfsResult.split('\n');
@@ -35,6 +37,8 @@ async function simFCFS() {
         div.id = `FCFSProc-${pid}`;
         div.style.opacity = '0';
       }
+      div.style.fontSize = '20px';
+      div.style.webkitTextStroke = '.5px black';
       div.textContent = line;
       res2.appendChild(div);
     });
