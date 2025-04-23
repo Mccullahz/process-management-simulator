@@ -39,8 +39,9 @@ type model struct {
 	processes    	[]cmd.Process
 	scheduled    	[]cmd.ScheduledProcess
 	timeSlices   	[]cmd.TimeSlice
-	schduledRR   	[]cmd.ScheduledProcess
+	scheduledRR   	[]cmd.ScheduledProcess
 	processSnapshot []cmd.ProcessStateSnapshot
+	currentSnapshotIndex int
 	cursor       	int
 	state        	appState
 	list         	list.Model
@@ -83,7 +84,7 @@ func initialModel() model {
 		processes:   procs,
 		scheduled:   sched,
 		timeSlices:  rrSlices,
-		schduledRR:  rrSched,
+		scheduledRR:  rrSched,
 		cursor:      0,
 		list:        l,
 		progress:    prog,
@@ -95,7 +96,7 @@ func initialModel() model {
 
 func (m model) Init() tea.Cmd {
 	if m.state == stateLoading {
-		return tickCmd()
+		return tickCmd("loading")
 	}
 	return nil
 }
@@ -110,16 +111,26 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	// tick message to update progress bar
 	case tickMsg:
-		if m.state == stateLoading {
-			m.percent += 0.25
-			if m.percent >= 1.0 {
-				// OLD VERSION adjust amount of processes generated, max burst time, and max arrival time
-				//m.processes = cmd.GenerateProcesses(5, 10, 5)
-				m.state = stateProcessInput
-				return m, nil
+		switch msg.tickType {
+		case "loading":
+			if m.state == stateLoading {
+				m.percent += 0.25
+				if m.percent >= 1.0 {
+					m.state = stateProcessInput
+					return m, nil
+				}
+				return m, tickCmd("loading")
 			}
-			return m, tickCmd()
+		case "snapshot":
+			if m.state == stateRR {
+				if m.currentSnapshotIndex < len(m.processSnapshot)-1 {
+					m.currentSnapshotIndex = 0
+					return m, tickCmd("snapshot")
+				}
+			}
 		}
+		return m, nil
+
 	// key press messages to handle user input
 	case tea.KeyMsg:
 	switch msg.String() {
@@ -140,7 +151,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.numProcesses = n
 			m.processes = cmd.GenerateProcesses(n, 10, 5)
 			m.scheduled, m.processSnapshot = cmd.FCFS(m.processes)
-			m.schduledRR, m.timeSlices, m.processSnapshot = cmd.RR(m.processes, 2)
+			m.scheduledRR, m.timeSlices, m.processSnapshot = cmd.RR(m.processes, 2)
 			m.state = stateMenu
 			m.inputError = ""
 			return m, nil
@@ -151,7 +162,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			case 1:
 				m.state = stateRR
-				return m, nil
+				m.currentSnapshotIndex = 0
+				return m, tickCmd("snapshot")
 			}
 		}
 	case "backspace":
@@ -270,7 +282,7 @@ func (m model) View() string {
 		body.WriteString("\n\n")
 
 		queueStyle := lipgloss.NewStyle().Border(lipgloss.RoundedBorder()).Padding(1, 2)
-
+		// holy shit this is so bad and long, I am so sorry to whomever has to see this bullsh
 		newStyle := queueStyle.Copy().BorderForeground(lipgloss.Color("#7D56F4")).Foreground(lipgloss.Color("#7D56F4"))
 		readyStyle := queueStyle.Copy().BorderForeground(lipgloss.Color("#00C49A")).Foreground(lipgloss.Color("#00C49A"))
 		runningStyle := queueStyle.Copy().BorderForeground(lipgloss.Color("#FF8700")).Foreground(lipgloss.Color("#FF8700"))
@@ -278,7 +290,8 @@ func (m model) View() string {
 		terminatedStyle := queueStyle.Copy().BorderForeground(lipgloss.Color("#AAAAAA")).Foreground(lipgloss.Color("#AAAAAA"))
 
 		if len(m.processSnapshot) > 0 {
-			snapshot := m.processSnapshot[0] // TODO: Replace with current time step index later
+			// get the current time step snapshot and use it to move the processes into the proper visual queue
+			snapshot := m.processSnapshot[m.currentSnapshotIndex]
 
 			newBox := newStyle.Render("New:\n" + joinPIDs(snapshot.New))
 			readyBox := readyStyle.Render("Ready:\n" + joinPIDs(snapshot.Ready))
@@ -310,11 +323,13 @@ func (m model) View() string {
 	return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Top, final)
 }
 // necessary tick message for progress bar
-type tickMsg struct{}
+type tickMsg struct{
+	tickType string
+}
 
-func tickCmd() tea.Cmd {
-	return tea.Tick(time.Second/4, func(t time.Time) tea.Msg {
-		return tickMsg{}
+func tickCmd(tickType string) tea.Cmd {
+	return tea.Tick(time.Second, func(t time.Time) tea.Msg {
+		return tickMsg{tickType}
 	})
 }
 
