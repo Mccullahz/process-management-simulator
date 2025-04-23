@@ -95,6 +95,8 @@ async function simRR() {
       const pid = parseInt(parts[0]);
       div.id = `Proc-${pid}`;
       div.textContent = line;
+      div.style.fontSize = '20px';
+      div.style.webkitTextStroke = '.5px black';
       res1.appendChild(div);
     });
     const RRProc = RRResult.split('\n');
@@ -109,6 +111,8 @@ async function simRR() {
         div.id = `RRProc-${i-2}`;
         div.style.opacity = '0';
       }
+      div.style.fontSize = '20px';
+      div.style.webkitTextStroke = '.5px black';
       div.textContent = line;
       res2.appendChild(div);
     });
